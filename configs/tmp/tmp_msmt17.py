@@ -2,7 +2,7 @@ _base_ = '../_base_/default_runtime.py'
 
 model = dict(
     type='TMP',
-    pretrained='torchvision://resnet50',
+    pretrained='/root/data/zq/pretrained_models/resnet50-19c8e357.pth',
     backbone=dict(
         type='ResNet',
         depth=50,
