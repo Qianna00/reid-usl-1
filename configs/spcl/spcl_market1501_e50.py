@@ -3,7 +3,7 @@ _base_ = '../_base_/default_runtime.py'
 memory_size = 12936
 model = dict(
     type='Baseline',
-    pretrained='torchvision://resnet50',
+    pretrained='/root/data/zq/pretrained_models/resnet50-19c8e357.pth',
     backbone=dict(
         type='ResNet',
         depth=50,
@@ -25,7 +25,7 @@ model = dict(
         feat_dim=2048,
         memory_size=memory_size))
 
-data_source = dict(type='Market1501', data_root='data/market1501')
+data_source = dict(type='Market1501', data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15')
 dataset_type = 'PseudoLabelDataset'
 train_pipeline = [
     dict(type='LoadImage'),
