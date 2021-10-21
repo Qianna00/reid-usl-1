@@ -1,6 +1,6 @@
 _base_ = '../_base_/default_runtime.py'
 
-memory_size = 12936
+memory_size = 32621
 model = dict(
     type='Baseline',
     pretrained='/root/data/zq/pretrained_models/resnet50-19c8e357.pth',
