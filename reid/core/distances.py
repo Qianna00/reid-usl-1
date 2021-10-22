@@ -75,10 +75,8 @@ def jaccard_distance(features, k1=20, k2=6, fp16=False):
                     np.intersect1d(candidate_k_reciprocal_index,
                                    k_reciprocal_index)
             ) > 2 / 3 * len(candidate_k_reciprocal_index):
-                print(k_reciprocal_expansion_index, candidate_k_reciprocal_index)
                 k_reciprocal_expansion_index = np.append(
                     k_reciprocal_expansion_index, candidate_k_reciprocal_index)
-                print(k_reciprocal_expansion_index)
 
         k_reciprocal_expansion_index = np.unique(
             k_reciprocal_expansion_index)  # element-wise unique
