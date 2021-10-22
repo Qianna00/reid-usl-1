@@ -135,8 +135,8 @@ def jaccard_distance(features, k1=20, k2=6, fp16=False):
 
 def k_reciprocal_neigh(initial_rank, i, k1):
     forward_k_neigh_index = initial_rank[i, :k1 + 1]
-    print(forward_k_neigh_index, i, initial_rank)
     backward_k_neigh_index = initial_rank[forward_k_neigh_index, :k1 + 1]
     fi = np.where(backward_k_neigh_index == i)[0]
+    print(forward_k_neigh_index, i, initial_rank, backward_k_neigh_index, fi)
 
     return forward_k_neigh_index[fi]
