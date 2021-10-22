@@ -57,6 +57,7 @@ def jaccard_distance(features, k1=20, k2=6, fp16=False):
     res.setDefaultNullStreamAllDevices()
     _, initial_rank = faiss.knn_gpu(res, features, features, k1)
     initial_rank = initial_rank.cpu().numpy()
+    print(initial_rank.shape, initial_rank)
 
     nn_k1 = []
     nn_k1_half = []
