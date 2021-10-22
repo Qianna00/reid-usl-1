@@ -51,6 +51,7 @@ def jaccard_distance(features, k1=20, k2=6, fp16=False):
     features = features.cuda()
 
     N = features.size(0)
+    print(N)
     mat_type = np.float16 if fp16 else np.float32
 
     res = faiss.StandardGpuResources()
