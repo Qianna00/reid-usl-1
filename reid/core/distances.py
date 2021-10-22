@@ -51,14 +51,12 @@ def jaccard_distance(features, k1=20, k2=6, fp16=False):
     features = features.cuda()
 
     N = features.size(0)
-    print(N)
     mat_type = np.float16 if fp16 else np.float32
 
     res = faiss.StandardGpuResources()
     res.setDefaultNullStreamAllDevices()
     _, initial_rank = faiss.knn_gpu(res, features, features, k1)
     initial_rank = initial_rank.cpu().numpy()
-    print(initial_rank.shape, initial_rank)
 
     nn_k1 = []
     nn_k1_half = []
@@ -137,6 +135,7 @@ def jaccard_distance(features, k1=20, k2=6, fp16=False):
 
 def k_reciprocal_neigh(initial_rank, i, k1):
     forward_k_neigh_index = initial_rank[i, :k1 + 1]
+    print(forward_k_neigh_index, i, initial_rank)
     backward_k_neigh_index = initial_rank[forward_k_neigh_index, :k1 + 1]
     fi = np.where(backward_k_neigh_index == i)[0]
 
