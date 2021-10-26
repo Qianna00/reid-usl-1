@@ -86,7 +86,17 @@ custom_hooks = [
         interval=1)
 ]
 # optimizer
-optimizer = dict(type='SGD', lr=0.1, weight_decay=0.0001, momentum=0.9)
+paramwise_cfg = {
+    r'(bn|gn)(\d+)?.(weight|bias)': dict(weight_decay=0., lars_exclude=True),
+    r'bias': dict(weight_decay=0., lars_exclude=True)
+}
+optimizer = dict(
+    type='LARS',
+    lr=0.3,
+    weight_decay=0.0000015,
+    momentum=0.9,
+    paramwise_cfg=paramwise_cfg)
+# optimizer = dict(type='SGD', lr=0.1, weight_decay=0.0001, momentum=0.9)
 # learning policy
 lr_config = dict(
     policy='CosineAnnealing',
