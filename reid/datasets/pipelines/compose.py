@@ -11,7 +11,7 @@ class Compose(object):
             img = self.transforms[0](img, results['camid'])
             start_idx = 1
 
-        img = results['img']
+        # img = results['img']
         for t in self.transforms[start_idx:]:
             img = t(img)
         results['img'] = img
