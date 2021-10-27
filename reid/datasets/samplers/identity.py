@@ -130,6 +130,7 @@ class DistributedFixedStepIdentitySampler(FixedStepIdentitySampler):
         if rank is None:
             rank = _rank
         self.num_replicas = num_replicas
+        print("num_replicas:", self.num_replicas)
         self.rank = rank
         # batch_size of single process -> total batch size
         batch_size = batch_size * self.num_replicas
