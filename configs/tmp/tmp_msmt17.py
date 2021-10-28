@@ -86,7 +86,7 @@ custom_hooks = [
         interval=1)
 ]
 # optimizer
-optimizer = dict(type='SGD', lr=0.1, weight_decay=0.0001, momentum=0.9)
+optimizer = dict(type='SGD', lr=0.1, weight_decay=5e-4, momentum=0.9)
 # learning policy
 lr_config = dict(
     policy='CosineAnnealing',
