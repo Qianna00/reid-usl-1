@@ -36,7 +36,7 @@ class FixedStepIdentitySampler(Sampler):
 
         self.num_samples = self.batch_size * self.step
         self.total_size = self.num_samples
-        self.init_data()
+        # self.init_data()
 
     def init_data(self):
         self.index_pid = defaultdict(int)  # index -> pid
@@ -54,7 +54,7 @@ class FixedStepIdentitySampler(Sampler):
         return self.num_samples
 
     def __iter__(self):
-        # self.init_data()
+        self.init_data()
 
         indices = []
         while len(indices) < self.num_samples:
@@ -143,7 +143,7 @@ class DistributedFixedStepIdentitySampler(FixedStepIdentitySampler):
         self.epoch = 0
 
     def __iter__(self):
-        # self.init_data()
+        self.init_data()
 
         g = torch.Generator()
         g.manual_seed(self.seed + self.epoch)
