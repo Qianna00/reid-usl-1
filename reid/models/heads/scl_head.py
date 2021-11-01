@@ -27,9 +27,10 @@ class AnotherSCLHead(nn.Module):
 
         label = concat_all_gather(label)
         label = label.view(-1, 1)
+        print(label.shape, label)
+        print("transpose:", label.t())
 
         label_mask = label.eq(label.t()).float()
-        print(label.eq(label.t()), label_mask.shape, label_mask)
         label_mask = label_mask.repeat(2, 2)
         is_neg = 1 - label_mask
         # 2N x (2N - 1)
