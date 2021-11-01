@@ -27,8 +27,6 @@ class AnotherSCLHead(nn.Module):
 
         label = concat_all_gather(label)
         label = label.view(-1, 1)
-        print(label.shape, label)
-        print("transpose:", label.t())
 
         label_mask = label.eq(label.t()).float()
         label_mask = label_mask.repeat(2, 2)
@@ -40,6 +38,7 @@ class AnotherSCLHead(nn.Module):
                                        mask == 1).reshape(2 * N, -1)
 
         rank, world_size = get_dist_info()
+        print(rank, world_size)
         size = int(2 * N / world_size)
 
         pos_mask = torch.split(pos_mask, [size] * world_size, dim=0)[rank]
