@@ -38,8 +38,8 @@ class AnotherSCLHead(nn.Module):
                                        mask == 1).reshape(2 * N, -1)
 
         rank, world_size = get_dist_info()
-        print(rank, world_size)
         size = int(2 * N / world_size)
+        print([size]*world_size)
 
         pos_mask = torch.split(pos_mask, [size] * world_size, dim=0)[rank]
         neg_mask = torch.split(neg_mask, [size] * world_size, dim=0)[rank]
