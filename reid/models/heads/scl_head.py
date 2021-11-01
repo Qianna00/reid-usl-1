@@ -19,7 +19,6 @@ class AnotherSCLHead(nn.Module):
 
     def forward(self, features, label, **kwargs):
         N = features.shape[0]
-        print(label.shape)
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
 
@@ -30,6 +29,7 @@ class AnotherSCLHead(nn.Module):
         label = label.view(-1, 1)
 
         label_mask = label.eq(label.t()).float()
+        print(label_mask.shape)
         label_mask = label_mask.repeat(2, 2)
         is_neg = 1 - label_mask
         # 2N x (2N - 1)
