@@ -19,20 +19,18 @@ class AnotherSCLHead(nn.Module):
 
     def forward(self, features, label, **kwargs):
         N = features.shape[0]
-        print(features.shape)
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
 
         mask = 1 - torch.eye(2 * N, dtype=torch.uint8).cuda()
+        print(torch.masked_select(logit, mask == 1).shape)
         logit = torch.masked_select(logit, mask == 1).reshape(2 * N, -1)
 
         label = concat_all_gather(label)
         label = label.view(-1, 1)
-        print("label:", label)
+
         label_mask = label.eq(label.t()).float()
-        print("label_mask1:", label_mask)
         label_mask = label_mask.repeat(2, 2)
-        print("label_mask2:", label_mask)
         is_neg = 1 - label_mask
         # 2N x (2N - 1)
         pos_mask = torch.masked_select(label_mask.bool(),
