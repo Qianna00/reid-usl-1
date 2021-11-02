@@ -43,7 +43,6 @@ class AnotherSCLHead(nn.Module):
         pos_mask = torch.split(pos_mask, [size] * world_size, dim=0)[rank]
         neg_mask = torch.split(neg_mask, [size] * world_size, dim=0)[rank]
         logit = torch.split(logit, [size] * world_size, dim=0)[rank]
-        print(logit.shape)
 
         n = logit.size(0)
         loss = []

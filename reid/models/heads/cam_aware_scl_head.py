@@ -19,7 +19,6 @@ class CamAwareSCLHead(nn.Module):
 
     def forward(self, features, label, camid, **kwargs):
         N = features.shape[0]
-        print(camid.shape, camid)
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
 
@@ -28,12 +27,18 @@ class CamAwareSCLHead(nn.Module):
 
         label = concat_all_gather(label)
         label = label.view(-1, 1)
+        camid = concat_all_gather(camid)
+        camid = camid.view(-1, 1)
 
-        label_mask = label.eq(label.t()).float()
-        label_mask = label_mask.repeat(2, 2)
-        is_neg = 1 - label_mask
+        # label_mask = label.eq(label.t()).float()
+        # label_mask = label_mask.repeat(2, 2)
+        is_pos = label.eq(label.t()) & camid.eq(camid.t())
+        is_pos = is_pos.float().repeat(2, 2)
+        # is_neg = 1 - label_mask
+        is_neg = 1 - is_pos
+
         # 2N x (2N - 1)
-        pos_mask = torch.masked_select(label_mask.bool(),
+        pos_mask = torch.masked_select(is_pos.bool(),
                                        mask == 1).reshape(2 * N, -1)
         neg_mask = torch.masked_select(is_neg.bool(),
                                        mask == 1).reshape(2 * N, -1)
@@ -44,7 +49,6 @@ class CamAwareSCLHead(nn.Module):
         pos_mask = torch.split(pos_mask, [size] * world_size, dim=0)[rank]
         neg_mask = torch.split(neg_mask, [size] * world_size, dim=0)[rank]
         logit = torch.split(logit, [size] * world_size, dim=0)[rank]
-        print(logit.shape)
 
         n = logit.size(0)
         loss = []
