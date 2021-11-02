@@ -31,8 +31,8 @@ class CamAwareSCLHead(nn.Module):
         camid = camid.view(-1, 1)
 
         label_mask = label.eq(label.t())
-        label_mask = label_mask.float().repeat(2, 2)
         is_pos = label_mask & camid.eq(camid.t())
+        label_mask = label_mask.float().repeat(2, 2)
         is_pos = is_pos.float().repeat(2, 2)
         is_neg = 1 - label_mask
         is_neg_cam = 1 - is_pos
