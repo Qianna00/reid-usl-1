@@ -74,7 +74,7 @@ class CamAwareSCLHead(nn.Module):
                 _label = _logit.new_zeros((1, ), dtype=torch.long)
                 _loss = self.criterion(_logit, _label)
                 loss_single_img.append(_loss)
-            loss.append(sum(loss_single_img) / pos_inds.size(0) / 2.0)
+            loss.append(sum(loss_single_img) / pos_inds.size(0))
             loss_single_img_cam = []
             for k in range(pos_inds_cam.size(0)):
                 positive_cam = logit[i, pos_inds_cam[k]].reshape(1, 1)
