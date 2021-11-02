@@ -26,7 +26,6 @@ class BaseModel(nn.Module):
 
     def forward(self, mode='train', **data):
         if mode == 'train':
-            print(data)
             return self.forward_train(**data)
         elif mode == 'test':
             return self.forward_test(**data)

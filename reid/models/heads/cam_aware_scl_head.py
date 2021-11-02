@@ -19,6 +19,7 @@ class CamAwareSCLHead(nn.Module):
 
     def forward(self, features, label, camid, **kwargs):
         N = features.shape[0]
+        print(camid.shape, camid)
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
 
