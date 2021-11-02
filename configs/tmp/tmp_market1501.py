@@ -83,7 +83,7 @@ custom_hooks = [
             workers_per_gpu=4),
         label_generator=dict(
             type='SelfPacedGenerator', eps=[0.75], min_samples=4, k1=30, k2=6),
-        interval=1)
+        interval=4)
 ]
 # optimizer
 # paramwise_cfg = {
