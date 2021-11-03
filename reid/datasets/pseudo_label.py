@@ -5,7 +5,7 @@ from .reid_dataset import ReIDDataset
 @DATASETS.register_module()
 class PseudoLabelDataset(ReIDDataset):
 
-    def update_labels(self, labels):
+    def update_labels(self, labels, labels_cam=None):
         assert len(labels) == len(self)
 
         # update self.img_items
@@ -19,3 +19,5 @@ class PseudoLabelDataset(ReIDDataset):
         self.pids = list(set(labels))
         # update self.pid_dict
         self.pid_dict = {p: i for i, p in enumerate(self.pids)}
+        print(self.pid_dict)
+        # self.pid_cam_dict = {p: i for i, p in enumerate(list(set(labels_cam)))}
