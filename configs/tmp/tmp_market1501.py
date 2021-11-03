@@ -22,10 +22,6 @@ model = dict(
 data_source = dict(type='Market1501', data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15')
 dataset_type = 'ContrastiveDataset'
 train_pipeline = [
-    dict(
-        type='RandomCamStyle',
-        camstyle_root='bounding_box_train_camstyle',
-        p=0.5),
     dict(type='LoadImage'),
     dict(
         type='RandomResizedCrop',
@@ -35,6 +31,12 @@ train_pipeline = [
         interpolation=3),
     dict(type='RandomHorizontalFlip'),
     dict(type='RandomRotation', degrees=10),
+    dict(
+        type='ColorJitter',
+        brightness=0.2,
+        contrast=0.2,
+        saturation=0.2,
+        hue=0),
     dict(
         type='RandomApply',
         transforms=[dict(type='GaussianBlur', sigma=(0.1, 2.0))],
