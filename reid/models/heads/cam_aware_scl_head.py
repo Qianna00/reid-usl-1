@@ -84,7 +84,7 @@ class CamAwareSCLHead(nn.Module):
                 _label_cam = _logit_cam.new_zeros((1,), dtype=torch.long)
                 _loss_cam = self.criterion(_logit_cam, _label_cam)
                 loss_single_img_cam.append(_loss_cam)
-            loss.append(sum(loss_single_img_cam) / pos_inds_cam.size(0) / 2.0)
+            loss.append(sum(loss_single_img_cam) / pos_inds_cam.size(0) * 0.2)
 
         loss = sum(loss)
         loss /= logit.size(0)
