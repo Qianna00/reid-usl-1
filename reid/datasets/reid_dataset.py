@@ -51,7 +51,7 @@ class ReIDDataset(Dataset):
         if self.cam_aware:
             img, pid, camid, label_cam = self.get_sample(idx)
             label = self.pid_dict[pid] if not self.test_mode else pid
-            label_cam = self.pid_cam[idx] if not self.test_mode else pid
+            label_cam = self.pids_cam[idx] if not self.test_mode else pid
             results = dict(img=img, label=label, pid=pid, camid=camid, idx=idx, label_cam=label_cam)
         else:
             img, pid, camid = self.get_sample(idx)
