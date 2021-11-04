@@ -18,6 +18,8 @@ class ReIDDataset(Dataset):
         verbose = True if rank == 0 else False
         self.img_items, self.pids, self.camids = self.data_source.get_data(
             test_mode=self.test_mode, verbose=verbose)
+        if self.cam_aware:
+            self.pids_cam = self.pids
 
         if not self.test_mode:
             # pid -> label
