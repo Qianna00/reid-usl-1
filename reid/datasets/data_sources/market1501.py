@@ -26,7 +26,7 @@ class Market1501(ReIDDataSource):
         self.gallery_dir = osp.join(self.data_root, 'bounding_box_test')
         self.cam_aware = cam_aware
 
-        train = self.process_dir(self.train_dir)
+        train = self.process_dir(self.train_dir, train_mode=True)
         query = self.process_dir(self.query_dir)
         gallery = self.process_dir(self.gallery_dir)
 
@@ -56,12 +56,12 @@ class Market1501(ReIDDataSource):
         else:
             return self.train, pids, camids
 
-    def process_dir(self, dir_path):
+    def process_dir(self, dir_path, train_mode=False):
         img_paths = glob(osp.join(dir_path, '*.jpg'))
         pattern = re.compile(r'([-\d]+)_c(\d)')
 
         data = []
-        if self.cam_aware:
+        if self.cam_aware and train_mode:
             data_cam_aware = {'cam' + str(i): [] for i in range(self.NUM_CAMERAS)}
             data_cam_aware = OrderedDict(data_cam_aware)
 
