@@ -19,7 +19,7 @@ class ReIDDataset(Dataset):
         self.img_items, self.pids, self.camids = self.data_source.get_data(
             test_mode=self.test_mode, verbose=verbose)
         if self.cam_aware:
-            self.pids_cam = self.pids
+            self.pids_cam = list(range(self.__len__()))
 
         if not self.test_mode:
             # pid -> label
@@ -51,7 +51,6 @@ class ReIDDataset(Dataset):
         if self.cam_aware:
             img, pid, camid, label_cam = self.get_sample(idx)
             label = self.pid_dict[pid] if not self.test_mode else pid
-            print(len(self.pids_cam), self.pids_cam)
             label_cam = self.pids_cam[idx] if not self.test_mode else pid
             results = dict(img=img, label=label, pid=pid, camid=camid, idx=idx, label_cam=label_cam)
         else:
