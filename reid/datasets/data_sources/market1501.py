@@ -32,6 +32,26 @@ class Market1501(ReIDDataSource):
 
         super(Market1501, self).__init__(train, query, gallery)
 
+    def parse_data_cam_aware(self, data):
+        pids = set()
+        camids = set()
+        for i, (_, pid, camid, _) in enumerate(data):
+            pids.add(pid)
+            camids.add(camid)
+
+        return list(pids), list(camids)
+
+    def _get_train_data(self, verbose=True):
+        if self.cam_aware:
+            pids, camids = self.parse_data_cam_aware(self.train)
+        else:
+            pids, camids = self.parse_data(self.train)
+
+        if verbose:
+            self._print_train_info(len(self.train), len(pids), len(camids))
+
+        return self.train, pids, camids
+
     def process_dir(self, dir_path):
         img_paths = glob(osp.join(dir_path, '*.jpg'))
         pattern = re.compile(r'([-\d]+)_c(\d)')
