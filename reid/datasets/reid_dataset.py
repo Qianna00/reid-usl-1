@@ -8,10 +8,11 @@ from .pipelines import build_pipeline
 @DATASETS.register_module()
 class ReIDDataset(Dataset):
 
-    def __init__(self, data_source, pipeline=None, test_mode=False):
+    def __init__(self, data_source, pipeline=None, test_mode=False, cam_aware=False):
         self.data_source = build_data_source(data_source)
         self.DATA_SOURCE = self.data_source.DATA_SOURCE
         self.test_mode = test_mode
+        self.cam_aware = cam_aware
 
         rank, _ = get_dist_info()
         verbose = True if rank == 0 else False
@@ -36,9 +37,13 @@ class ReIDDataset(Dataset):
         return len(self.img_items)
 
     def get_sample(self, idx):
-        img, pid, camid = self.img_items[idx]
+        if self.cam_aware:
+            img, pid, camid, pid_cam = self.img_items[idx]
+            return img, pid, camid, pid_cam
+        else:
+            img, pid, camid = self.img_items[idx]
+            return img, pid, camid
 
-        return img, pid, camid
 
     def __getitem__(self, idx):
         img, pid, camid = self.get_sample(idx)

@@ -10,18 +10,19 @@ from .extractor import Extractor
 @HOOKS.register_module()
 class LabelGenerationHook(Hook):
 
-    def __init__(self, extractor, label_generator, start=1, interval=1):
+    def __init__(self, extractor, label_generator, start=1, interval=1, cam_aware=False):
         self.extractor = Extractor(**extractor)
         self.label_generator = build_label_generator(label_generator)
         self.start = start
         self.interval = interval
 
         self.distributed = dist.is_available() and dist.is_initialized()
+        self.cam_aware = cam_aware
 
     @torch.no_grad()
-    def _dist_gen_labels(self, feats):
+    def _dist_gen_labels(self, feats, camids):
         if dist.get_rank() == 0:
-            labels = self.label_generator.gen_labels(feats)[0]
+            labels = self.label_generator.gen_labels(feats, camids)[0]
             labels = labels.cuda()
         else:
             labels = torch.zeros(feats.shape[0], dtype=torch.long).cuda()
@@ -54,22 +55,31 @@ class LabelGenerationHook(Hook):
 
         with torch.no_grad():
             feats = self.extractor.extract_feats(runner.model)
-            if self.distributed:
-                labels = self._dist_gen_labels(feats)
+            if self.cam_aware:
+                camids = runner.data_loader.dataset.camids
             else:
-                labels = self._non_dist_gen_labels(feats)
+                camids = None
+            print(self.distributed, dist.get_rank())
+            if self.distributed:
+                labels, labels_cam = self._dist_gen_labels(feats, camids)
+            else:
+                labels = self._non_dist_gen_labels(feats, camids)
 
         runner.model.train()
 
         labels = labels.cpu().numpy()
-        runner.data_loader.dataset.update_labels(labels)
+        if self.cam_aware:
+            labels_cam = labels_cam.cpu().numpy()
+        else:
+            labels_cam = None
+        runner.data_loader.dataset.update_labels(labels, labels_cam)
         if hasattr(runner.data_loader.sampler, 'init_data'):
             # identity sampler cases
             runner.data_loader.sampler.init_data()
 
-        self.evaluate(runner, labels)
+        self.evaluate(runner, labels, labels_cam)
 
-    def evaluate(self, runner, labels):
+    def evaluate(self, runner, labels, labels_cam=None):
         hist = np.bincount(labels)
         clusters = np.where(hist > 1)[0]
         unclusters = np.where(hist == 1)[0]

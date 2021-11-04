@@ -4,6 +4,7 @@ from glob import glob
 
 from ..builder import DATA_SOURCES
 from .reid_data_source import ReIDDataSource
+from collections import OrderedDict
 
 
 @DATA_SOURCES.register_module()
@@ -17,12 +18,13 @@ class Market1501(ReIDDataSource):
     DATA_SOURCE = 'Market1501'
     NUM_CAMERAS = 6
 
-    def __init__(self, data_root):
+    def __init__(self, data_root, cam_aware=False):
         self.data_root = data_root
 
         self.train_dir = osp.join(self.data_root, 'bounding_box_train')
         self.query_dir = osp.join(self.data_root, 'query')
         self.gallery_dir = osp.join(self.data_root, 'bounding_box_test')
+        self.cam_aware = cam_aware
 
         train = self.process_dir(self.train_dir)
         query = self.process_dir(self.query_dir)
@@ -35,10 +37,22 @@ class Market1501(ReIDDataSource):
         pattern = re.compile(r'([-\d]+)_c(\d)')
 
         data = []
-        for img_path in img_paths:
-            pid, camid = map(int, pattern.search(img_path).groups())
-            if pid == -1:
-                continue
-            data.append((img_path, pid, camid))
+        if self.cam_aware:
+            data_cam_aware = {'cam' + str(i): [] for i in range(self.NUM_CAMERAS)}
+            data_cam_aware = OrderedDict(data_cam_aware)
+
+            for img_path in img_paths:
+                pid, camid = map(int, pattern.search(img_path).groups())
+                if pid == -1:
+                    continue
+                data_cam_aware['cam' + str(camid-1)].append((img_path, pid, camid, pid))
+            for v in data_cam_aware.values():
+                data.extend(v)
+        else:
+            for img_path in img_paths:
+                pid, camid = map(int, pattern.search(img_path).groups())
+                if pid == -1:
+                    continue
+                data.append((img_path, pid, camid))
 
         return data
