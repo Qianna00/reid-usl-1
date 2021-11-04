@@ -19,7 +19,7 @@ model = dict(
         avgpool=dict(type='AvgPoolNeck')),
     head=dict(type='CamAwareSCLHead', temperature=0.05))
 
-data_source = dict(type='Market1501', data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15')
+data_source = dict(type='Market1501', data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15', cam_aware=True)
 dataset_type = 'ContrastiveDataset'
 train_pipeline = [
     dict(
