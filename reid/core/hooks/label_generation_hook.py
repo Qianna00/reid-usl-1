@@ -64,7 +64,7 @@ class LabelGenerationHook(Hook):
         with torch.no_grad():
             feats = self.extractor.extract_feats(runner.model)
             if self.cam_aware:
-                camids = runner.data_loader.dataset.camids
+                camids = runner.data_loader.dataset.cam_ids
             else:
                 camids = None
             if self.distributed:

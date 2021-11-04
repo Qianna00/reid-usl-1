@@ -16,10 +16,13 @@ class ReIDDataset(Dataset):
 
         rank, _ = get_dist_info()
         verbose = True if rank == 0 else False
-        self.img_items, self.pids, self.camids = self.data_source.get_data(
-            test_mode=self.test_mode, verbose=verbose)
         if self.cam_aware:
+            self.img_items, self.pids, self.camids, self.cam_ids = self.data_source.get_data(
+                test_mode=self.test_mode, verbose=verbose)
             self.pids_cam = list(range(self.__len__()))
+        else:
+            self.img_items, self.pids, self.camids = self.data_source.get_data(
+                test_mode=self.test_mode, verbose=verbose)
 
         if not self.test_mode:
             # pid -> label
