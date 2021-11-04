@@ -8,11 +8,11 @@ from .pipelines import build_pipeline
 @DATASETS.register_module()
 class ReIDDataset(Dataset):
 
-    def __init__(self, data_source, pipeline=None, test_mode=False, cam_aware=False):
+    def __init__(self, data_source, pipeline=None, test_mode=False):
         self.data_source = build_data_source(data_source)
         self.DATA_SOURCE = self.data_source.DATA_SOURCE
         self.test_mode = test_mode
-        self.cam_aware = cam_aware
+        self.cam_aware = self.data_source.cam_aware
 
         rank, _ = get_dist_info()
         verbose = True if rank == 0 else False

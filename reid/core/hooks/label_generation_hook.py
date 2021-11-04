@@ -10,20 +10,28 @@ from .extractor import Extractor
 @HOOKS.register_module()
 class LabelGenerationHook(Hook):
 
-    def __init__(self, extractor, label_generator, start=1, interval=1, cam_aware=False):
+    def __init__(self, extractor, label_generator, start=1, interval=1):
         self.extractor = Extractor(**extractor)
         self.label_generator = build_label_generator(label_generator)
         self.start = start
         self.interval = interval
 
         self.distributed = dist.is_available() and dist.is_initialized()
-        self.cam_aware = cam_aware
+        self.cam_aware = self.extractor.dataset.data_source.cam_aware
 
     @torch.no_grad()
     def _dist_gen_labels(self, feats, camids):
         if dist.get_rank() == 0:
-            labels = self.label_generator.gen_labels(feats, camids)[0]
-            labels = labels.cuda()
+            if camids is not None:
+                labels, labels_cam = self.label_generator.gen_labels(feats, camids)[0]
+                labels = labels.cuda()
+                labels_cam = labels_cam.cuda()
+                dist.broadcast(labels, 0)
+                dist.broadcast(labels_cam, 0)
+                return labels, labels_cam
+            else:
+                labels = self.label_generator.gen_labels(feats)[0]
+                labels = labels.cuda()
         else:
             labels = torch.zeros(feats.shape[0], dtype=torch.long).cuda()
         dist.broadcast(labels, 0)
@@ -59,7 +67,6 @@ class LabelGenerationHook(Hook):
                 camids = runner.data_loader.dataset.camids
             else:
                 camids = None
-            print(self.distributed, dist.get_rank())
             if self.distributed:
                 labels, labels_cam = self._dist_gen_labels(feats, camids)
             else:

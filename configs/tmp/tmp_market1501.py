@@ -79,12 +79,14 @@ custom_hooks = [
         extractor=dict(
             dataset=dict(
                 type='ReIDDataset',
-                data_source=data_source,
+                data_source=dict(type='Market1501',
+                                 data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15',
+                                 cam_aware=True),
                 pipeline=test_pipeline),
             samples_per_gpu=32,
             workers_per_gpu=4),
         label_generator=dict(
-            type='SelfPacedGenerator', eps=[0.75], min_samples=4, k1=30, k2=6),
+            type='CamAwareSelfPacedGenerator', eps=[0.75], min_samples=4, k1=30, k2=6),
         interval=1)
 ]
 # optimizer
