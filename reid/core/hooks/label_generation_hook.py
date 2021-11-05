@@ -20,22 +20,27 @@ class LabelGenerationHook(Hook):
         self.cam_aware = self.extractor.dataset.data_source.cam_aware
 
     @torch.no_grad()
-    def _dist_gen_labels(self, feats, camids=None):
+    def _dist_gen_labels(self, feats):
         if dist.get_rank() == 0:
             labels = self.label_generator.gen_labels(feats)[0]
             labels = labels.cuda()
-            if camids is not None:
-                labels_cam = self.label_generator.gen_labels_cam(feats, camids)
-                labels_cam = labels_cam.cuda()
-                dist.broadcast(labels, 0)
-                dist.broadcast(labels_cam, 0)
-                return labels, labels_cam
-
         else:
             labels = torch.zeros(feats.shape[0], dtype=torch.long).cuda()
         dist.broadcast(labels, 0)
 
         return labels
+
+    @torch.no_grad()
+    def _dist_gen_labels_cam(self, feats, camids):
+        if dist.get_rank() == 0:
+            labels_cam = self.label_generator.gen_labels_cam(feats, camids)
+            labels_cam = labels_cam.cuda()
+            labels_cam = labels_cam.cuda()
+        else:
+            labels_cam = torch.zeros(feats.shape[0], dtype=torch.long).cuda()
+        dist.broadcast(labels_cam, 0)
+
+        return labels_cam
 
     @torch.no_grad()
     def _non_dist_gen_labels(self, feats):
@@ -67,12 +72,11 @@ class LabelGenerationHook(Hook):
             else:
                 camids = None
             if self.distributed:
+                labels = self._dist_gen_labels(feats)
                 if self.cam_aware:
-                    labels, labels_cam = self._dist_gen_labels(feats, camids)
-                else:
-                    labels = self._dist_gen_labels(feats, camids)
+                    labels_cam = self._dist_gen_labels_cam(feats, camids)
             else:
-                labels = self._non_dist_gen_labels(feats, camids)
+                labels = self._non_dist_gen_labels(feats)
 
         runner.model.train()
 
