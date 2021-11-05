@@ -7,6 +7,7 @@ from sklearn.cluster import DBSCAN
 from ..distances import jaccard_distance
 from .builder import LABEL_GENERATORS
 from .self_paced import SelfPacedGenerator
+from collections import Counter
 
 
 @LABEL_GENERATORS.register_module()
@@ -15,6 +16,7 @@ class CamAwareSelfPacedGenerator(SelfPacedGenerator):
     @torch.no_grad()
     def gen_labels_cam(self, features, camids):
         # features 12936*2048  camids 12936
+        print(len(camids), Counter(camids))
         unqiue_camids = list(set(camids))
         labels_cam = []
         for camid in unqiue_camids:
