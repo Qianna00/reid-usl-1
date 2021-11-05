@@ -16,13 +16,13 @@ class CamAwareSelfPacedGenerator(SelfPacedGenerator):
     @torch.no_grad()
     def gen_labels_cam(self, features, camids):
         # features 12936*2048  camids 12936
-        print(len(camids), Counter(camids))
+        print(camids.size())
         unqiue_camids = list(set(camids))
         labels_cam = []
         for camid in unqiue_camids:
-            camid_index = torch.nonzero(torch.tensor(camids) - camid).squeeze()
+            camid_index = (camids == camid).nonzero(as_tuple=True)[0]
             feat_camid = features[camid_index]
-            # print(features[camid_index].size())
+            print(features[camid_index].size())
             labels_camid = self.gen_labels(feat_camid)[0]
             labels_cam.extend(labels_camid)
         return labels_cam
