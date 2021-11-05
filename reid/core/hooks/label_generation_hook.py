@@ -99,3 +99,6 @@ class LabelGenerationHook(Hook):
         runner.logger.info(f'{self.__class__.__name__}: '
                            f'{clusters.shape[0]} clusters, '
                            f'{unclusters.shape[0]} unclusters')
+        # if labels_cam is not None:
+            # for labels_camid in labels_cam:
+
