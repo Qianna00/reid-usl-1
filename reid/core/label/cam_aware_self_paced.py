@@ -18,7 +18,7 @@ class CamAwareSelfPacedGenerator(SelfPacedGenerator):
         unqiue_camids = list(set(camids))
         labels_cam = []
         for camid in unqiue_camids:
-            camid_index = torch.nonzero(camids == camid)
+            camid_index = torch.nonzero(camids - camid)
             feat_camid = features[camid_index]
             print(features[camid_index].size())
             labels_camid = self.gen_labels(feat_camid)[0]
