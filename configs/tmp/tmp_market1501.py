@@ -67,7 +67,8 @@ data = dict(
         type=dataset_type, data_source=data_source, pipeline=train_pipeline),
     test=dict(
         type='ReIDDataset',
-        data_source=data_source,
+        data_source=dict(type='Market1501',
+                         data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15'),
         pipeline=test_pipeline,
         test_mode=True))
 
@@ -77,9 +78,7 @@ custom_hooks = [
         extractor=dict(
             dataset=dict(
                 type='ReIDDataset',
-                data_source=dict(type='Market1501',
-                                 data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15',
-                                 cam_aware=True),
+                data_source=data_source,
                 pipeline=test_pipeline),
             samples_per_gpu=32,
             workers_per_gpu=4),

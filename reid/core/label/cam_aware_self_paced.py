@@ -140,7 +140,7 @@ class CamAwareSelfPacedGenerator(object):
 
     @torch.no_grad()
     def gen_labels(self, features, camids=None):
-        print(type(camids), camids, features.shape, len(camids))
+        # features 12936*2048  camids 12936
         dist = jaccard_distance(features, k1=self.k1, k2=self.k2)
 
         if len(self.eps) == 1:
