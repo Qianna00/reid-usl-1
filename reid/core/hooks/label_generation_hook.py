@@ -67,7 +67,10 @@ class LabelGenerationHook(Hook):
             else:
                 camids = None
             if self.distributed:
-                labels, labels_cam = self._dist_gen_labels(feats, camids)
+                if self.cam_aware:
+                    labels, labels_cam = self._dist_gen_labels(feats, camids)
+                else:
+                    labels = self._dist_gen_labels(feats, camids)
             else:
                 labels = self._non_dist_gen_labels(feats, camids)
 
