@@ -16,7 +16,7 @@ class ReIDDataset(Dataset):
 
         rank, _ = get_dist_info()
         verbose = True if rank == 0 else False
-        if self.cam_aware:
+        if self.cam_aware and not test_mode:
             self.img_items, self.pids, self.camids, self.cam_ids = self.data_source.get_data(
                 test_mode=self.test_mode, verbose=verbose)
             self.pids_cam = list(range(self.__len__()))
