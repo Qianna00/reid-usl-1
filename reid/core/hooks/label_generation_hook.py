@@ -73,6 +73,7 @@ class LabelGenerationHook(Hook):
                 camids = None
             if self.distributed:
                 labels = self._dist_gen_labels(feats)
+                print(type(labels), labels.size())
                 if self.cam_aware:
                     labels_cam = self._dist_gen_labels_cam(feats, camids)
             else:
