@@ -20,7 +20,7 @@ class LabelGenerationHook(Hook):
         self.cam_aware = self.extractor.dataset.data_source.cam_aware
 
     @torch.no_grad()
-    def _dist_gen_labels(self, feats, camids):
+    def _dist_gen_labels(self, feats, camids=None):
         if dist.get_rank() == 0:
             labels = self.label_generator.gen_labels(feats)[0]
             labels = labels.cuda()

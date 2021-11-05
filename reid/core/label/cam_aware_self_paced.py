@@ -22,3 +22,4 @@ class CamAwareSelfPacedGenerator(SelfPacedGenerator):
             feat_camid = features[camid_index]
             labels_camid = self.gen_labels(feat_camid)[0]
             labels_cam.extend(labels_camid)
+        return labels_cam
