@@ -31,10 +31,9 @@ class LabelGenerationHook(Hook):
         return labels
 
     @torch.no_grad()
-    def _dist_gen_labels_cam(self, feats, camids):
+    def _dist_gen_labels_cam(self, feats, num_camids):
         if dist.get_rank() == 0:
-            labels_cam = self.label_generator.gen_labels_cam(feats, camids)
-            labels_cam = labels_cam.cuda()
+            labels_cam = self.label_generator.gen_labels_cam(feats, num_camids)
             labels_cam = labels_cam.cuda()
         else:
             labels_cam = torch.zeros(feats.shape[0], dtype=torch.long).cuda()
@@ -68,13 +67,13 @@ class LabelGenerationHook(Hook):
         with torch.no_grad():
             feats = self.extractor.extract_feats(runner.model)
             if self.cam_aware:
-                camids = torch.tensor(runner.data_loader.dataset.cam_ids)
+                num_camids = runner.data_loader.dataset.num_camids
             else:
-                camids = None
+                num_camids = None
             if self.distributed:
                 labels = self._dist_gen_labels(feats)
                 if self.cam_aware:
-                    labels_cam = self._dist_gen_labels_cam(feats, camids)
+                    labels_cam = self._dist_gen_labels_cam(feats, num_camids)
             else:
                 labels = self._non_dist_gen_labels(feats)
 
@@ -90,15 +89,22 @@ class LabelGenerationHook(Hook):
             # identity sampler cases
             runner.data_loader.sampler.init_data()
 
-        self.evaluate(runner, labels, labels_cam)
+        self.evaluate(runner, labels, labels_cam, num_camids)
 
-    def evaluate(self, runner, labels, labels_cam=None):
+    def evaluate(self, runner, labels, labels_cam=None, num_camids=None):
         hist = np.bincount(labels)
         clusters = np.where(hist > 1)[0]
         unclusters = np.where(hist == 1)[0]
         runner.logger.info(f'{self.__class__.__name__}: '
                            f'{clusters.shape[0]} clusters, '
                            f'{unclusters.shape[0]} unclusters')
-        # if labels_cam is not None:
-            # for labels_camid in labels_cam:
+        if labels_cam is not None:
+            labels_cam_list = torch.split(labels_cam, num_camids)
+            for labels_camid in labels_cam_list:
+                hist_camid = np.bincount(labels_camid)
+                clusters_camid = np.where(hist_camid > 1)[0]
+                unclusters_camid = np.where(hist_camid == 1)[0]
+                runner.logger.info(f'{self.__class__.__name__} : '
+                                   f'{clusters_camid.shape[0]} clusters, '
+                                   f'{unclusters_camid.shape[0]} unclusters')
 

@@ -40,8 +40,10 @@ class Market1501(ReIDDataSource):
             pids.add(pid)
             camids.add(camid)
             cam_ids.append(camid)
-
-        return list(pids), list(camids), cam_ids
+        num_camids = list()
+        for i in camids:
+            num_camids.append(cam_ids.count(i))
+        return list(pids), list(camids), num_camids
 
     def _get_train_data(self, verbose=True):
         if self.cam_aware:
