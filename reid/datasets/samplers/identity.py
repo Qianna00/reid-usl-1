@@ -172,3 +172,64 @@ class DistributedFixedStepIdentitySampler(FixedStepIdentitySampler):
 def No_index(a, b):
     assert isinstance(a, list)
     return [i for i, j in enumerate(a) if j != b]
+
+
+@SAMPLERS.register_module()
+class DistributedCamAwareFixedStepIdentitySampler(DistributedFixedStepIdentitySampler):
+    def init_data(self):
+        self.index_pid = defaultdict(int)  # index -> pid
+        self.pid_cams = defaultdict(list)  # pid -> [camids]
+        self.pid_inds = defaultdict(list)  # pid -> [indexes]
+        # self.index_pid_cam = defaultdict(int)  # index -> pid
+
+        for index, (_, pid, camid, pid_cam) in enumerate(self.dataset.img_items):
+            self.index_pid[index] = pid
+            self.pid_cams[pid].append(camid)
+            self.pid_inds[pid].append(index)
+            # self.index_pid_cam[index] = pid_cam
+
+        self.pids = list(self.pid_inds.keys())
+
+    def _sample_list(self, indices):
+        ret = []
+
+        for p_idx in indices:
+            i = random.choice(self.pid_inds[self.pids[p_idx]])
+            _, i_pid, i_camid, pid_cam = self.dataset.img_items[i]
+            ret.append(i)
+
+            cams = self.pid_cams[i_pid]
+            inds = self.pid_inds[i_pid]
+            select_cams = No_index(cams, i_camid)
+
+            if select_cams:
+                if len(select_cams) >= self.num_instances:
+                    cam_indexes = np.random.choice(
+                        select_cams,
+                        size=self.num_instances - 1,
+                        replace=False)
+                else:
+                    cam_indexes = np.random.choice(
+                        select_cams, size=self.num_instances - 1, replace=True)
+
+                for _idx in cam_indexes:
+                    ret.append(inds[_idx])
+            else:
+                select_indexes = No_index(inds, i)
+                if not select_indexes:
+                    continue
+                elif len(select_indexes) >= self.num_instances:
+                    ind_indexes = np.random.choice(
+                        select_indexes,
+                        size=self.num_instances - 1,
+                        replace=False)
+                else:
+                    ind_indexes = np.random.choice(
+                        select_indexes,
+                        size=self.num_instances - 1,
+                        replace=True)
+
+                for _idx in ind_indexes:
+                    ret.append(inds[_idx])
+
+        return ret
