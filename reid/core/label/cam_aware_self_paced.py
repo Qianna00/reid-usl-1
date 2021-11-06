@@ -23,5 +23,5 @@ class CamAwareSelfPacedGenerator(SelfPacedGenerator):
             labels_camid = self.gen_labels(feat_camid)[0]
             print(type(labels_camid))
             labels_cam.append(labels_camid)
-        print(type(labels_cam), type(labels_cam[0]))
+        print(type(labels_cam), type(labels_cam[0], labels_cam[0].size()))
         return labels_cam
