@@ -12,6 +12,8 @@ def concat_all_gather(tensor):
             for _ in range(torch.distributed.get_world_size())
         ]
         torch.distributed.all_gather(tensors_gather, tensor, async_op=False)
+        for i in range(len(tensors_gather)):
+            print(tensors_gather[i].size())
         output = torch.cat(tensors_gather, dim=0)
 
         return output
