@@ -103,7 +103,7 @@ class LabelGenerationHook(Hook):
             num = 0
             for i in range(len(num_camids)-1):
                 num += num_camids[i]
-                camids_spit_index.append(num)
+                camids_split_index.append(num)
             labels_cam_list = np.split(labels_cam, camids_split_index)
             for i, labels_camid in enumerate(labels_cam_list):
                 hist_camid = np.bincount(labels_camid)
