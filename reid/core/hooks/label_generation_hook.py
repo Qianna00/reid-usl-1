@@ -99,12 +99,13 @@ class LabelGenerationHook(Hook):
                            f'{clusters.shape[0]} clusters, '
                            f'{unclusters.shape[0]} unclusters')
         if labels_cam is not None:
-            labels_cam_list = torch.split(labels_cam, num_camids)
-            for labels_camid in labels_cam_list:
+            camids_split_index = [num_camids[0], num_camids[0] + num_camids[1], num_camids[0] + num_camids[1] + num_camids[2]]
+            labels_cam_list = np.split(labels_cam, camids_split_index)
+            for i, labels_camid in enumerate(labels_cam_list):
                 hist_camid = np.bincount(labels_camid)
                 clusters_camid = np.where(hist_camid > 1)[0]
                 unclusters_camid = np.where(hist_camid == 1)[0]
-                runner.logger.info(f'{self.__class__.__name__} : '
+                runner.logger.info(f'{self.__class__.__name__} cam{i}: '
                                    f'{clusters_camid.shape[0]} clusters, '
                                    f'{unclusters_camid.shape[0]} unclusters')
 
