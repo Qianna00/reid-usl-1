@@ -182,11 +182,8 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
 
         mask = 1 - torch.eye(2 * N, dtype=torch.uint8).cuda()
         logit = torch.masked_select(logit, mask == 1).reshape(2 * N, -1)
-
-        print(features.size(), label.size())
         label = concat_all_gather(label)
         label = label.view(-1, 1)
-        print(label.size(), label.eq(label.t()).size())
 
         label_mask = label.eq(label.t()).float()
         label_mask = label_mask.repeat(2, 2)
