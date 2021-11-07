@@ -3,9 +3,10 @@ from .latent_pred_head import LatentPredictHead
 from .mmcl_head import MMCLHead
 from .sup_contrast_head import SupContrastHead
 from .scl_head import AnotherSCLHead
-from .cam_aware_scl_head import CamAwareSCLHead
+from .cam_aware_scl_head import CamAwareSCLHead, AnotherCamAwareSCLHead, AnotherNewCamAwareSCLHead
 
 __all__ = [
     'HybridMemoryHead', 'LatentPredictHead', 'MMCLHead', 'SupContrastHead',
-    'AnotherSCLHead', 'CamAwareSCLHead'
+    'AnotherSCLHead', 'CamAwareSCLHead', 'AnotherCamAwareSCLHead',
+    'AnotherNewCamAwareSCLHead'
 ]
