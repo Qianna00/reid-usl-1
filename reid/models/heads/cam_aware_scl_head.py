@@ -185,12 +185,12 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
 
         label = concat_all_gather(label)
         label = label.view(-1, 1)
+        print(label.size(), label.eq(label.t()).size())
 
         label_mask = label.eq(label.t()).float()
         label_mask = label_mask.repeat(2, 2)
         is_neg = 1 - label_mask
         # 2N x (2N - 1)
-        print(N, label_mask.size(), mask.size())
         pos_mask = torch.masked_select(label_mask.bool(),
                                        mask == 1).reshape(2 * N, -1)
         neg_mask = torch.masked_select(is_neg.bool(),
