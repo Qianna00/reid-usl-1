@@ -165,13 +165,14 @@ class AnotherCamAwareSCLHead(CamAwareSCLHead):
 @HEADS.register_module()
 class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
     def forward(self, features, label, camid, label_cam, **kwargs):
-        loss = []
-        loss_all = self.compute_loss(features, label)
-        loss.extend(loss_all)
         cam_ids = torch.unique(camid).tolist()
         for cam_id in cam_ids:
             index = torch.nonzero(camid == cam_id, as_tuple=False).view(-1)
             print(cam_id, index)
+        loss = []
+        loss_all = self.compute_loss(features, label)
+        loss.extend(loss_all)
+        
         
         
 
@@ -180,7 +181,7 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
 
         return dict(loss=loss)
     
-    def compute_loss(features, label):
+    def compute_loss(self, features, label):
         N = features.shape[0]
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
