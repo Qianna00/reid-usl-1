@@ -101,7 +101,7 @@ class LabelGenerationHook(Hook):
         if labels_cam is not None:
             camids_split_index = []
             num = 0
-            for i in range(len(num_camids)):
+            for i in range(len(num_camids)-1):
                 num += num_camids[i]
                 camids_spit_index.append(num)
             labels_cam_list = np.split(labels_cam, camids_split_index)
