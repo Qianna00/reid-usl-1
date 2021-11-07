@@ -99,7 +99,11 @@ class LabelGenerationHook(Hook):
                            f'{clusters.shape[0]} clusters, '
                            f'{unclusters.shape[0]} unclusters')
         if labels_cam is not None:
-            camids_split_index = [num_camids[0], num_camids[0] + num_camids[1], num_camids[0] + num_camids[1] + num_camids[2]]
+            camids_split_index = []
+            num = 0
+            for i in range(len(num_camids)):
+                num += num_camids[i]
+                camids_spit_index.append(num)
             labels_cam_list = np.split(labels_cam, camids_split_index)
             for i, labels_camid in enumerate(labels_cam_list):
                 hist_camid = np.bincount(labels_camid)
