@@ -176,6 +176,7 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
         return dict(loss=loss)
     
     def compute_loss(self, features, label):
+        print(features.size(), label.size())
         N = features.shape[0]
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
