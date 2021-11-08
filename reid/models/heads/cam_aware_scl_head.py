@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from mmcv.runner import get_dist_info
 
-from reid.utils import concat_all_gather
+from reid.utils import concat_all_gather, concat_all_gather_async
 from ..builder import HEADS
 from .scl_head import AnotherSCLHead
 
@@ -163,31 +163,28 @@ class AnotherCamAwareSCLHead(CamAwareSCLHead):
     
 
 @HEADS.register_module()
-class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
+class AnotherNewCamAwareSCLHead(AnotherSCLHead):
     def forward(self, features, label, camid, label_cam, **kwargs):
         loss = self.compute_loss(features, label)
         cam_ids = torch.unique(camid).tolist()
         for cam_id in cam_ids:
             index = torch.nonzero(camid == cam_id, as_tuple=False).view(-1)
             label_cam_id = label_cam[index]
-            index_ = concat_all_gather(index)
+            index_ = concat_all_gather_async(index)
             feats = features[index_]
             loss_cam_id = self.compute_loss(feats, label_cam_id)
-            print("loss_cam_id:", loss_cam_id)
+            print(loss_cam_id)
             loss += loss_cam_id
         return dict(loss=loss)
-    
+
     def compute_loss(self, features, label):
-        print(features.size(), label.size())
         N = features.shape[0]
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
 
         mask = 1 - torch.eye(2 * N, dtype=torch.uint8).cuda()
         logit = torch.masked_select(logit, mask == 1).reshape(2 * N, -1)
-        print(123)
         label = concat_all_gather(label)
-        print(456)
         label = label.view(-1, 1)
 
         label_mask = label.eq(label.t()).float()
@@ -207,7 +204,6 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
         logit = torch.split(logit, [size] * world_size, dim=0)[rank]
 
         n = logit.size(0)
-        print(n)
         loss = []
 
         for i in range(n):
