@@ -199,8 +199,8 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
             camid = concat_all_gather(camid)
             camid = camid.view(-1, 1)
             cam_mask = camid.eq(camid.t())
-            cluster_label_mask = global_label_mask and cam_mask
-            cluster_is_neg = (1 - global_label_mask.float()).bool() and cam_mask
+            cluster_label_mask = global_label_mask & cam_mask
+            cluster_is_neg = (1 - global_label_mask.float()).bool() & cam_mask
             label_mask = cluster_label_mask.repeat(2, 2)
             is_neg = cluster_is_neg.repeat(2, 2)
         else:
