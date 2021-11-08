@@ -179,8 +179,8 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
             # index_ = concat_all_gather(index)
             loss_cam_id = self.compute_loss(features, label_cam, camid)
             loss += loss_cam_id"""
-        loss = loss + loss_cam
-        return dict(loss=loss)
+        # loss = loss + loss_cam
+        return dict(loss=loss, loss_cam=loss_cam)
 
     def compute_loss(self, features, label, camid=None):
         N = features.shape[0]
