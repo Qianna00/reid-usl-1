@@ -172,14 +172,13 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
             label_cam_id = label_cam[index]
             index_ = concat_all_gather(index)
             feats = features[index_]
-            print(str(cam_id) + ', index:' + str(index) + ', label_cam_id' + str(label_cam_id) +
-                  ', index_after_gather:' + str(index_) + ", feats:", feats.size())
             loss_cam_id = self.compute_loss(feats, label_cam_id)
             print("loss_cam_id:", loss_cam_id)
             loss += loss_cam_id
         return dict(loss=loss)
     
     def compute_loss(self, features, label):
+        print(features.size(), label.size())
         N = features.shape[0]
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
@@ -206,6 +205,7 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
         logit = torch.split(logit, [size] * world_size, dim=0)[rank]
 
         n = logit.size(0)
+        print(n)
         loss = []
 
         for i in range(n):
