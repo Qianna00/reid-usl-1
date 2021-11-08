@@ -168,16 +168,16 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         loss = self.compute_loss(features, label)
         cam_ids = torch.unique(camid).tolist()
         N = label.shape(0)
-        label_cam_pad = - torch.ones(N)
+        # label_cam_pad = - label_cam
         # label_cam_pad[:label_cam.shape(0)] = label_cam
         # camid_pad = -torch.ones(N)
         # camid_pad[:camid.shape(0)] = camid
         index_pad = -torch.ones(N)
         for cam_id in cam_ids:
             index = torch.nonzero(camid != cam_id, as_tuple=False).view(-1)
-            label_cam_pad[index] = -1
+            label_cam[index] = -1
             # index_ = concat_all_gather(index)
-            loss_cam_id = self.compute_loss(features, label_cam_pad)
+            loss_cam_id = self.compute_loss(features, label_cam)
             print(loss_cam_id)
             loss += loss_cam_id
         return dict(loss=loss)
