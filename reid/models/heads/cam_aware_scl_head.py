@@ -205,7 +205,7 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
             is_neg = cluster_is_neg.repeat(2, 2)
         else:
             label_mask = global_label_mask.repeat(2, 2)
-            is_neg = (1 - global_label_mask.float()).bool()
+            is_neg = (1 - global_label_mask.float()).bool().repeat(2, 2)
 
 
         # 2N x (2N - 1)
