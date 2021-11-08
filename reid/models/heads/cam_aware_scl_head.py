@@ -168,6 +168,7 @@ class AnotherNewCamAwareSCLHead(CamAwareSCLHead):
         loss = self.compute_loss(features, label)
         cam_ids = torch.unique(camid).tolist()
         for cam_id in cam_ids:
+            print(camid)
             index = torch.nonzero(camid == cam_id, as_tuple=False).view(-1)
             label_cam_id = label_cam[index]
             index = concat_all_gather(index)
