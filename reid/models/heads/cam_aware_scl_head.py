@@ -166,22 +166,23 @@ class AnotherCamAwareSCLHead(CamAwareSCLHead):
 class AnotherNewCamAwareSCLHead(AnotherSCLHead):
     def forward(self, features, label, camid, label_cam, **kwargs):
         loss = self.compute_loss(features, label)
-        cam_ids = torch.unique(camid).tolist()
+        # cam_ids = torch.unique(camid).tolist()
         # label_cam_pad = - label_cam
         # label_cam_pad[:label_cam.shape(0)] = label_cam
         # camid_pad = -torch.ones(N)
         # camid_pad[:camid.shape(0)] = camid
         # index_pad = -torch.ones(N)
-        for cam_id in cam_ids:
+        loss_cam = self.compute_loss(features, label_cam, camid)
+        """for cam_id in cam_ids:
             index = torch.nonzero(camid != cam_id, as_tuple=False).view(-1)
             label_cam[index] = -1
             # index_ = concat_all_gather(index)
-            loss_cam_id = self.compute_loss(features, label_cam)
-            print(loss_cam_id)
-            loss += loss_cam_id
+            loss_cam_id = self.compute_loss(features, label_cam, camid)
+            loss += loss_cam_id"""
+        loss = loss + loss_cam
         return dict(loss=loss)
 
-    def compute_loss(self, features, label):
+    def compute_loss(self, features, label, camid=None):
         N = features.shape[0]
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
@@ -189,15 +190,28 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         mask = 1 - torch.eye(2 * N, dtype=torch.uint8).cuda()
         logit = torch.masked_select(logit, mask == 1).reshape(2 * N, -1)
         label = concat_all_gather(label)
+        # label = label[torch.nonzero(label != -1)]
         label = label.view(-1, 1)
 
-        label_mask = label.eq(label.t()).float()
-        label_mask = label_mask.repeat(2, 2)
-        is_neg = 1 - label_mask
+        global_label_mask = label.eq(label.t())
+
+        if camid is not None:
+            camid = concat_all_gather(camid)
+            camid = camid.view(-1, 1)
+            cam_mask = camid.eq(camid.t())
+            cluster_label_mask = global_label_mask and cam_mask
+            cluster_is_neg = (1 - global_label_mask.float()).bool() and cam_mask
+            label_mask = cluster_label_mask.repeat(2, 2)
+            is_neg = cluster_is_neg.repeat(2, 2)
+        else:
+            label_mask = global_label_mask.repeat(2, 2)
+            is_neg = (1 - global_label_mask.float()).bool()
+
+
         # 2N x (2N - 1)
-        pos_mask = torch.masked_select(label_mask.bool(),
+        pos_mask = torch.masked_select(label_mask,
                                        mask == 1).reshape(2 * N, -1)
-        neg_mask = torch.masked_select(is_neg.bool(),
+        neg_mask = torch.masked_select(is_neg,
                                        mask == 1).reshape(2 * N, -1)
 
         rank, world_size = get_dist_info()
