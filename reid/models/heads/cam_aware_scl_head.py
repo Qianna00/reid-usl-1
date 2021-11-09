@@ -318,7 +318,7 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
             for j in range(pos_inds.size(0)):
                 positive = logit[i, pos_inds[j]].reshape(1, 1)
                 negative = logit[i, neg_inds].unsqueeze(0)
-                negative = torch.topk(negative, k=100, dim=1)
+                negative, _ = torch.topk(negative, k=100, dim=1)
                 _logit = torch.cat((positive, negative), dim=1)
                 _logit /= self.temperature
                 _label = _logit.new_zeros((1,), dtype=torch.long)
