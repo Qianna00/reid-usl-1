@@ -166,23 +166,61 @@ class AnotherCamAwareSCLHead(CamAwareSCLHead):
 class AnotherNewCamAwareSCLHead(AnotherSCLHead):
     def forward(self, features, label, camid, label_cam, **kwargs):
         loss_global = self.compute_loss(features, label)
-        # cam_ids = torch.unique(camid).tolist()
-        # label_cam_pad = - label_cam
-        # label_cam_pad[:label_cam.shape(0)] = label_cam
-        # camid_pad = -torch.ones(N)
-        # camid_pad[:camid.shape(0)] = camid
-        # index_pad = -torch.ones(N)
-        loss_cam = self.compute_loss(features, label_cam, camid)
-        """for cam_id in cam_ids:
-            index = torch.nonzero(camid != cam_id, as_tuple=False).view(-1)
-            label_cam[index] = -1
-            # index_ = concat_all_gather(index)
-            loss_cam_id = self.compute_loss(features, label_cam, camid)
-            loss += loss_cam_id"""
-        # loss = loss_global + loss_cam
-        return dict(loss_cam=loss_cam, loss_global=loss_global)
+        loss_intra_cam = self.compute_intra_loss(features, label_cam, camid)
+        loss_inter_cam = self.compute_inter_loss(features, label_cam, camid)
+        return dict(loss_intr_cam=loss_intra_cam, loss_inter_cam=loss_inter_cam, loss_global=loss_global)
 
-    def compute_loss(self, features, label, camid=None):
+    def compute_loss(self, features, label, **kwargs):
+        N = features.shape[0]
+        features = torch.cat(torch.unbind(features, dim=1), dim=0)
+        logit = torch.matmul(features, features.t())
+
+        mask = 1 - torch.eye(2 * N, dtype=torch.uint8).cuda()
+        logit = torch.masked_select(logit, mask == 1).reshape(2 * N, -1)
+
+        label = concat_all_gather(label)
+        label = label.view(-1, 1)
+
+        label_mask = label.eq(label.t()).float()
+        label_mask = label_mask.repeat(2, 2)
+        is_neg = 1 - label_mask
+        # 2N x (2N - 1)
+        pos_mask = torch.masked_select(label_mask.bool(),
+                                       mask == 1).reshape(2 * N, -1)
+        neg_mask = torch.masked_select(is_neg.bool(),
+                                       mask == 1).reshape(2 * N, -1)
+
+        rank, world_size = get_dist_info()
+        size = int(2 * N / world_size)
+
+        pos_mask = torch.split(pos_mask, [size] * world_size, dim=0)[rank]
+        neg_mask = torch.split(neg_mask, [size] * world_size, dim=0)[rank]
+        logit = torch.split(logit, [size] * world_size, dim=0)[rank]
+
+        n = logit.size(0)
+        loss = []
+
+        for i in range(n):
+            pos_inds = torch.nonzero(pos_mask[i] == 1, as_tuple=False).view(-1)
+            neg_inds = torch.nonzero(neg_mask[i] == 1, as_tuple=False).view(-1)
+
+            loss_single_img = []
+            for j in range(pos_inds.size(0)):
+                positive = logit[i, pos_inds[j]].reshape(1, 1)
+                negative = logit[i, neg_inds].unsqueeze(0)
+                _logit = torch.cat((positive, negative), dim=1)
+                _logit /= self.temperature
+                _label = _logit.new_zeros((1,), dtype=torch.long)
+                _loss = self.criterion(_logit, _label)
+                loss_single_img.append(_loss)
+            loss.append(sum(loss_single_img) / pos_inds.size(0))
+
+        loss = sum(loss)
+        loss /= logit.size(0)
+
+        return loss
+
+    def compute_intra_loss(self, features, label, camid):
         N = features.shape[0]
         features = torch.cat(torch.unbind(features, dim=1), dim=0)
         logit = torch.matmul(features, features.t())
@@ -194,19 +232,13 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         label = label.view(-1, 1)
 
         global_label_mask = label.eq(label.t())
-
-        if camid is not None:
-            camid = concat_all_gather(camid)
-            camid = camid.view(-1, 1)
-            cam_mask = camid.eq(camid.t())
-            cluster_label_mask = global_label_mask & cam_mask
-            cluster_is_neg = (1 - global_label_mask.float()).bool() & cam_mask
-            label_mask = cluster_label_mask.repeat(2, 2)
-            is_neg = cluster_is_neg.repeat(2, 2)
-        else:
-            label_mask = global_label_mask.repeat(2, 2)
-            is_neg = (1 - global_label_mask.float()).bool().repeat(2, 2)
-
+        camid = concat_all_gather(camid)
+        camid = camid.view(-1, 1)
+        cam_mask = camid.eq(camid.t())
+        cluster_label_mask = global_label_mask & cam_mask
+        cluster_is_neg = (1 - global_label_mask.float()).bool() & cam_mask
+        label_mask = cluster_label_mask.repeat(2, 2)
+        is_neg = cluster_is_neg.repeat(2, 2)
 
         # 2N x (2N - 1)
         pos_mask = torch.masked_select(label_mask,
@@ -234,11 +266,67 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
                 negative = logit[i, neg_inds].unsqueeze(0)
                 _logit = torch.cat((positive, negative), dim=1)
                 _logit /= self.temperature
-                _label = _logit.new_zeros((1, ), dtype=torch.long)
+                _label = _logit.new_zeros((1,), dtype=torch.long)
                 _loss = self.criterion(_logit, _label)
                 loss_single_img.append(_loss)
             loss.append(sum(loss_single_img) / pos_inds.size(0))
-           
+
         loss = sum(loss)
         loss /= logit.size(0)
+        return loss
+
+    def compute_inter_loss(self, features, label, camid):
+        N= features.shape[0]
+        features = torch.cat(torch.unbind(features, dim=1), dim=0)
+        logit = torch.matmul(features, features.t())
+
+        mask = 1 - torch.eye(2 * N, dtype=torch.uint8).cuda()
+        logit = torch.masked_select(logit, mask == 1).reshape(2 * N, -1)
+
+        label = concat_all_gather(label)
+        label = label.view(-1, 1)
+        camid = concat_all_gather(camid)
+        camid = camid.view(-1, 1)
+        cam_mask = camid.eq(camid.t())
+        diff_cam_mask = (1 - cam_mask.float()).bool()
+
+        label_mask = label.eq(label.t())
+        is_neg = (1 - label_mask.float()).bool() & diff_cam_mask
+        label_mask = label_mask.repeat(2, 2)
+        is_neg = is_neg.repeat(2, 2)
+        # 2N x (2N - 1)
+        pos_mask = torch.masked_select(label_mask.bool(),
+                                       mask == 1).reshape(2 * N, -1)
+        neg_mask = torch.masked_select(is_neg.bool(),
+                                       mask == 1).reshape(2 * N, -1)
+
+        rank, world_size = get_dist_info()
+        size = int(2 * N / world_size)
+
+        pos_mask = torch.split(pos_mask, [size] * world_size, dim=0)[rank]
+        neg_mask = torch.split(neg_mask, [size] * world_size, dim=0)[rank]
+        logit = torch.split(logit, [size] * world_size, dim=0)[rank]
+
+        n = logit.size(0)
+        loss = []
+
+        for i in range(n):
+            pos_inds = torch.nonzero(pos_mask[i] == 1, as_tuple=False).view(-1)
+            neg_inds = torch.nonzero(neg_mask[i] == 1, as_tuple=False).view(-1)
+
+            loss_single_img = []
+            for j in range(pos_inds.size(0)):
+                positive = logit[i, pos_inds[j]].reshape(1, 1)
+                negative = logit[i, neg_inds].unsqueeze(0)
+                print(negative.size())
+                _logit = torch.cat((positive, negative), dim=1)
+                _logit /= self.temperature
+                _label = _logit.new_zeros((1,), dtype=torch.long)
+                _loss = self.criterion(_logit, _label)
+                loss_single_img.append(_loss)
+            loss.append(sum(loss_single_img) / pos_inds.size(0))
+
+        loss = sum(loss)
+        loss /= logit.size(0)
+
         return loss
