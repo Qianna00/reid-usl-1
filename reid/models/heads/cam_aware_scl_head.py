@@ -262,6 +262,8 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         for i in range(n):
             pos_inds = torch.nonzero(pos_mask[i] == 1, as_tuple=False).view(-1)
             neg_inds = torch.nonzero(neg_mask[i] == 1, as_tuple=False).view(-1)
+            if pos_inds.size(0) == 0:
+                continue
 
             loss_single_img = []
             for j in range(pos_inds.size(0)):
@@ -318,6 +320,8 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         for i in range(n):
             pos_inds = torch.nonzero(pos_mask[i] == 1, as_tuple=False).view(-1)
             neg_inds = torch.nonzero(neg_mask[i] == 1, as_tuple=False).view(-1)
+            if pos_inds.size(0) == 0:
+                continue
 
             loss_single_img = []
             for j in range(pos_inds.size(0)):
