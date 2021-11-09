@@ -235,8 +235,11 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         camid = concat_all_gather(camid)
         camid = camid.view(-1, 1)
         cam_mask = camid.eq(camid.t())
-        cluster_label_mask = global_label_mask & cam_mask
-        cluster_is_neg = (1 - global_label_mask.float()).bool() & cam_mask
+        # mask unclusters
+        label_uncluster = -torch.ones(label.size())
+        uncluster_mask = (1 - label.eq(label_uncluster.t()).float()).bool()
+        cluster_label_mask = global_label_mask & cam_mask & uncluster_mask
+        cluster_is_neg = (1 - global_label_mask.float()).bool() & cam_mask & uncluster_mask
         label_mask = cluster_label_mask.repeat(2, 2)
         is_neg = cluster_is_neg.repeat(2, 2)
 
@@ -288,10 +291,12 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         camid = concat_all_gather(camid)
         camid = camid.view(-1, 1)
         cam_mask = camid.eq(camid.t())
+        label_uncluster = -torch.ones(label.size())
+        uncluster_mask = (1 - label.eq(label_uncluster.t()).float()).bool()
         diff_cam_mask = (1 - cam_mask.float()).bool()
 
-        label_mask = label.eq(label.t())
-        is_neg = (1 - label_mask.float()).bool() & diff_cam_mask
+        label_mask = label.eq(label.t()) & uncluster_mask
+        is_neg = (1 - label_mask.float()).bool() & diff_cam_mask & uncluster_mask
         label_mask = label_mask.repeat(2, 2)
         is_neg = is_neg.repeat(2, 2)
         # 2N x (2N - 1)
