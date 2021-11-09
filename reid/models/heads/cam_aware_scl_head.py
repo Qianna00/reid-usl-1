@@ -168,7 +168,7 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
         loss_global = self.compute_loss(features, label)
         loss_intra_cam = self.compute_intra_loss(features, label_cam, camid)
         loss_inter_cam = self.compute_inter_loss(features, label_cam, camid)
-        return dict(loss_intr_cam=loss_intra_cam, loss_inter_cam=loss_inter_cam, loss_global=loss_global)
+        return dict(loss_intra_cam=loss_intra_cam, loss_inter_cam=loss_inter_cam, loss_global=loss_global)
 
     def compute_loss(self, features, label, **kwargs):
         N = features.shape[0]
@@ -318,7 +318,7 @@ class AnotherNewCamAwareSCLHead(AnotherSCLHead):
             for j in range(pos_inds.size(0)):
                 positive = logit[i, pos_inds[j]].reshape(1, 1)
                 negative = logit[i, neg_inds].unsqueeze(0)
-                print(negative.size())
+                negative = torch.topk(negative, k=100, dim=1)
                 _logit = torch.cat((positive, negative), dim=1)
                 _logit /= self.temperature
                 _label = _logit.new_zeros((1,), dtype=torch.long)
