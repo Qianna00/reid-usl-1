@@ -106,9 +106,10 @@ class LabelGenerationHook(Hook):
                 camids_split_index.append(num)
             labels_cam_list = np.split(labels_cam, camids_split_index)
             for i, labels_camid in enumerate(labels_cam_list):
-                hist_camid = np.bincount(labels_camid)
+                clusters_labels_cam = labels_camid[np.where(labels_camid >= 0)]
+                hist_camid = np.bincount(clusters_labels_cam)
                 clusters_camid = np.where(hist_camid > 1)[0]
-                unclusters_camid = np.where(hist_camid == 1)[0]
+                unclusters_camid = np.where(labels_camid < 0)[0]
                 runner.logger.info(f'{self.__class__.__name__} cam{i}: '
                                    f'{clusters_camid.shape[0]} clusters, '
                                    f'{unclusters_camid.shape[0]} unclusters')
