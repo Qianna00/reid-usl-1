@@ -74,6 +74,7 @@ class AugmentDataset(ContrastiveDataset):
 
         img1 = self.pipeline(copy.deepcopy(results))['img']
         img2 = self.pipeline(copy.deepcopy(results))['img']
+        print(img)
 
         return img1, img2
 
