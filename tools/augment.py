@@ -85,6 +85,8 @@ for i in range(len(dataset)):
     dst_root = '/root/vsislab-2/zq/data/market1501'
     img1_path = img.replace(src_root, dst_root)[:-4] + '_aug1.jpg'
     img2_path = img.replace(src_root, dst_root)[:-4] + '_aug2.jpg'
+    if not os.path.exists(img1_path):
+        continue
 
     img1.save(img1_path)
     img2.save(img2_path)
