@@ -19,7 +19,7 @@ from reid.datasets.builder import DATASETS
 from reid.datasets.contrastive import ContrastiveDataset
 
 data_source = dict(type='Market1501', data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15', cam_aware=True)
-dataset_type = 'ContrastiveDataset'
+dataset_type = 'AugmentDataset'
 train_pipeline = [
     dict(
         type='RandomCamStyle',
