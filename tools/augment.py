@@ -74,14 +74,18 @@ class AugmentDataset(ContrastiveDataset):
 
         img1 = self.pipeline(copy.deepcopy(results))['img']
         img2 = self.pipeline(copy.deepcopy(results))['img']
-        print(img)
 
-        return img1, img2
+        return img, img1, img2
 
 dataset = build_dataset(data["train"])
 
 for i in range(len(dataset)):
-    img1, img2 = dataset.__getitem__(i)
+    img, img1, img2 = dataset.__getitem__(i)
+    src_root = '/root/data/zq/data/market1501/Market-1501-v15.09.15'
+    dst_root = '/root/vsislab-2/zq/data/market1501'
+    img1_path = img.replace(src_root, dst_root)[:-4] + '_aug1.jpg'
+    img2_path = img.replace(src_root, dst_root)[:-4] + '_aug2.jpg'
 
-    print(type(img1))
+    img1.save(img1_path)
+    img2.save(img2_path)
 
