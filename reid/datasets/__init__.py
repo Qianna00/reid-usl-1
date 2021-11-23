@@ -6,9 +6,10 @@ from .pipelines import *  # noqa
 from .pseudo_label import PseudoLabelDataset
 from .reid_dataset import ReIDDataset
 from .samplers import *  # noqa
+from .hybrid import HybridDataset
 
 __all__ = [
     'DATASETS', 'DATA_SOURCES', 'build_dataset', 'build_data_source',
     'build_dataloader', 'ReIDDataset', 'ContrastiveDataset', 'SAMPLERS',
-    'build_sampler', 'PseudoLabelDataset'
+    'build_sampler', 'PseudoLabelDataset', 'HybridDataset'
 ]
