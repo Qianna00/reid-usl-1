@@ -17,9 +17,9 @@ model = dict(
         with_bias=False,
         with_avg_pool=True,
         avgpool=dict(type='AvgPoolNeck')),
-    head=dict(type='AnotherNewCamAwareSCLHead', temperature=0.05))
+    head=dict(type='AnotherSCLHead', temperature=0.05))
 
-data_source = dict(type='Market1501', data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15', cam_aware=True)
+data_source = dict(type='Market1501', data_root='/root/data/zq/data/market1501/Market-1501-v15.09.15')
 dataset_type = 'ContrastiveDataset'
 train_pipeline = [
     dict(
@@ -59,10 +59,9 @@ data = dict(
     samples_per_gpu=32,
     workers_per_gpu=4,
     sampler=dict(
-        type='CamAwareFixedStepIdentitySampler',
+        type='FixedStepIdentitySampler',
         num_instances=4,
-        step=50,
-        with_camid=True),
+        step=50),
     train=dict(
         type=dataset_type, data_source=data_source, pipeline=train_pipeline),
     test=dict(
@@ -83,7 +82,7 @@ custom_hooks = [
             samples_per_gpu=32,
             workers_per_gpu=4),
         label_generator=dict(
-            type='CamAwareSelfPacedGenerator', eps=[0.75], min_samples=4, k1=30, k2=6),
+            type='SelfPacedGenerator', eps=[0.75], min_samples=4, k1=30, k2=6),
         interval=1)
 ]
 # optimizer
