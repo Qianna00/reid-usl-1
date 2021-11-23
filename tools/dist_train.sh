@@ -7,5 +7,4 @@ PORT=${PORT:-29517}
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 python -m torch.distributed.launch --nproc_per_node=$GPUS --master_port=$PORT \
     $(dirname "$0")/train.py $CONFIG --sync-bn --deterministic \
-    --resume-from /root/vsislab-2/zq/ICCV_hex/tmp/no_pretrain/latest.pth \
     --work-dir /root/vsislab-2/zq/ICCV_hex/tmp/no_pretrain --launcher pytorch ${@:3}
