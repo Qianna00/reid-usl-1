@@ -12,7 +12,7 @@ class HybridDataset(PseudoLabelDataset):
     def __init__(self, data_source, pipeline=None, aug_pipeline=None, test_mode=False):
 
         if aug_pipeline is not None:
-            self.aug_pipeline = build_pipeline(aug_pipeline)
+            self.aug_pipeline = build_pipeline(aug_pipeline, dataset=self)
         else:
             self.aug_pipeline = None
 
