@@ -11,12 +11,13 @@ from .pipelines import build_pipeline
 class HybridDataset(PseudoLabelDataset):
     def __init__(self, data_source, pipeline=None, aug_pipeline=None, test_mode=False):
 
+        super(HybridDataset).__init__(data_source=data_source, pipeline=pipeline, test_mode=test_mode)
+
         if aug_pipeline is not None:
             self.aug_pipeline = build_pipeline(aug_pipeline, dataset=self)
         else:
             self.aug_pipeline = None
 
-        super(HybridDataset).__init__(data_source=data_source, pipeline=pipeline, test_mode=test_mode)
 
     def __getitem__(self, idx):
         img, pid, camid = self.get_sample(idx)
