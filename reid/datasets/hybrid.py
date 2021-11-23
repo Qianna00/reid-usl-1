@@ -24,6 +24,7 @@ class HybridDataset(PseudoLabelDataset):
         label = self.pid_dict[pid] if not self.test_mode else pid
         results = dict(img=img, label=label, pid=pid, camid=camid, idx=idx)
 
+        img = self.pipeline(copy.deepcopy(results))['img']
         img1 = self.aug_pipeline(copy.deepcopy(results))['img']
         img2 = self.aug_pipeline(copy.deepcopy(results))['img']
         img_cat = torch.cat((img.unsqueeze(0), img1.unsqueeze(0), img2.unsqueeze(0)), dim=0)
