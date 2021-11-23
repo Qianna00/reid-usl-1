@@ -82,6 +82,6 @@ custom_hooks = [
             k1=30,
             k2=6))
 ]
-optimizer = dict(type='Adam', lr=0.0028, weight_decay=5e-4)
+optimizer = dict(type='Adam', lr=0.00035, weight_decay=5e-4)
 lr_config = dict(policy='step', step=[20, 40])
 total_epochs = 50
