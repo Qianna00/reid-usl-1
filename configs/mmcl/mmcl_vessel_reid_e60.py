@@ -35,7 +35,7 @@ train_pipeline = [
     dict(type='LoadImage'),
     dict(
         type='RandomResizedCrop',
-        size=(256, 128),
+        size=(180, 256),
         scale=(0.64, 1.0),
         ratio=(0.33, 0.5),
         interpolation=3),
@@ -56,7 +56,7 @@ train_pipeline = [
 ]
 test_pipeline = [
     dict(type='LoadImage'),
-    dict(type='Resize', size=(256, 128), interpolation=3),
+    dict(type='Resize', size=(180, 256), interpolation=3),
     dict(type='ToTensor'),
     dict(
         type='Normalize',
